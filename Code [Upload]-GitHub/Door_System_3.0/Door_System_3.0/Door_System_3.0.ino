@@ -1,3 +1,18 @@
+/*
+  Hello This is me Hashtag .....
+  This is my Personal Home Automation Work,
+  I use this project in my room to auto lock my door or open it..!
+  I added 3 Buttons in 3 different places in my room and one one the Door handel which opens the door.
+  There is a Display outside to type in Passcode and (Secret Passcode) to Enter Room or change Current Passcode, with Display Light toggle option.
+  I also added a Safety Feature where in case the System Frezes or something happens i can Mannually Reset using button hidden in my Door. 
+
+  Name: Aniket Chowdhury [Hashtag]
+  Email: micro.aniket@gmail.com
+  GitHub: https://github.com/itzzhashtag
+  Instagram: https://instagram.com/itzz_hashtag
+  LinkedIn: https://www.linkedin.com/in/itzz-hashtag/
+*/
+
 //==============================================================================================
 // --- Libraries Used ---
 //==============================================================================================
