@@ -127,10 +127,14 @@ The project is installed in **my personal room** and is built with **modular exp
 
 ---
 
-## 📜 License
+This project is released under a Modified MIT License.
+It is intended for personal and non-commercial use only.
 
-This project is for **personal/home use only**.  
-For any collaboration, replication, or commercial adaptation, contact the author.
+🚫 Commercial use or distribution for profit is not permitted without prior written permission.
+🤝 For collaboration, reuse, or licensing inquiries, please contact the author.
+
+📄 View Full License <br>
+[![License: MIT–NC](https://img.shields.io/badge/license-MIT--NC-blue.svg)](./LICENSE)
 
 ---
 
