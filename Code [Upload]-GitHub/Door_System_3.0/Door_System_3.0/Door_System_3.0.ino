@@ -135,6 +135,11 @@ void loop()
 //==============================================================================================
 void keygen()
 {
+  /*
+  if (Serial.available())                           //in case of Testing from system Serial Use this Line
+  {
+    char incoming = Serial.read();
+  */
   if (nanoSerial.available())                       // Detect Data incomming from Different Board [Nano]
   {
     char incoming = nanoSerial.read();              // Read the Data Incomming from Board
