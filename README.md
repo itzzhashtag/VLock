@@ -127,6 +127,8 @@ The project is installed in **my personal room** and is built with **modular exp
 
 ---
 
+## 📜 License
+
 This project is released under a Modified MIT License.
 It is intended for personal and non-commercial use only.
 
