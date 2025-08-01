@@ -13,6 +13,8 @@
   LinkedIn: https://www.linkedin.com/in/itzz-hashtag/
 */
 
+// For taking Key Data from Other system (Keypad in Nano Board) use Keypad_Nano_v1.0
+
 //==============================================================================================
 // --- Libraries Used ---
 //==============================================================================================
