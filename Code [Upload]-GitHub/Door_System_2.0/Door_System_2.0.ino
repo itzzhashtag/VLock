@@ -17,7 +17,7 @@ const int LP1 = A3; // Red LED
 const int LP2 = A2; // Green LED
 const int LP3 = A1; // Blue LED (buzzer indicator)
 const int LP4 = 8;  // Button LED
-const int TriggerPin = A0;
+const int TriggerPin = 7;
 const int buttonPin = 10;          // Door toggle button pin
 const int hingeSwitchPin = 5;      // Hinge safety switch pin
 const int buzzerPin = 12;          // Buzzer pin
@@ -29,8 +29,8 @@ const int TriggerSwitchPin = 4;              // Triger to close door
 uint8_t passIndex = 0;
 char mappedKey;
 char enteredPasscode[7] = ""; // store entered passcode
-char passcode[] = "120202";
-const char changepasscode[]="#1221#";
+char passcode[] = "123456";
+const char changepasscode[]="#1234#";
 bool servoState = false;
 bool isUnlocking = false;
 bool isChangingPasscode = false;
@@ -656,3 +656,4 @@ void RestartBuzz()
 //===============================================
 // --- The End ---
 //===============================================
+
