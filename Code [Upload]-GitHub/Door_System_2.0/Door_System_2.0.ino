@@ -1,85 +1,120 @@
-//===============================================
+/*
+  Hello This is me Hashtag .....
+  This is my Personal Home Automation Work,
+  I use this project in my room to auto lock my door or open it..!
+  I added 3 Buttons in 3 different places in my room and one one the Door handel which opens the door.
+  There is a Display outside to type in Passcode and (Secret Passcode) to Enter Room or change Current Passcode, with Display Light toggle option.
+  I also added a Safety Feature where in case the System Frezes or something happens i can Mannually Reset using button hidden in my Door. 
+
+  Name: Aniket Chowdhury [Hashtag]
+  Email: micro.aniket@gmail.com
+  GitHub: https://github.com/itzzhashtag
+  Instagram: https://instagram.com/itzz_hashtag
+  LinkedIn: https://www.linkedin.com/in/itzz-hashtag/
+*/
+
+//OLD model - Use V3.0
+
+//==============================================================================================
 // --- Libraries Used ---
-//===============================================
-#include <Servo.h>
-#include <Keypad.h>
-#include <LiquidCrystal_I2C.h>
-#include <SoftwareSerial.h>
-SoftwareSerial nanoSerial(2, 3);
-//===============================================
+//==============================================================================================
+#include <Servo.h>                  // For controlling the servo motor (used for door mechanism)
+#include <LiquidCrystal_I2C.h>      // For interfacing with I2C LCD display (20x4)
+#include <SoftwareSerial.h>         // For creating a secondary serial communication port
+
+//==============================================================================================
 // --- Matrix Pins ---
-//===============================================
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+//==============================================================================================
+
+SoftwareSerial nanoSerial(2, 3);    // Nano-RX to D2, TX to D3
+LiquidCrystal_I2C lcd(0x27, 20, 4); // Set the LCD I2C address to 0x27, and define 20 columns and 4 rows
 //===============================================
 // --- IO Pins ---
 //===============================================
-const int LP1 = A3; // Red LED
-const int LP2 = A2; // Green LED
-const int LP3 = A1; // Blue LED (buzzer indicator)
-const int LP4 = 8;  // Button LED
-const int TriggerPin = 7;
-const int buttonPin = 10;          // Door toggle button pin
-const int hingeSwitchPin = 5;      // Hinge safety switch pin
-const int buzzerPin = 12;          // Buzzer pin
-const int srPin = 9;               // Servo motor pin
-const int TriggerSwitchPin = 4;              // Triger to close door
+const int LP1 = A3;                 // Red LED
+const int LP2 = A2;                 // Green LED
+const int LP3 = A1;                 // Blue LED (buzzer indicator)
+const int LP4 = 8;                  // Button LED
+const int TriggerPin = 7;          // Pin to control solenoid trigger
+const int buttonPin = 10;           // Door toggle button pin
+const int hingeSwitchPin = 5;       // Hinge safety switch pin
+const int buzzerPin = 12;           // Buzzer pin
+const int srPin = 9;                // Servo motor pin
+const int TriggerSwitchPin = 4;     // Triger to close door
 //===============================================
 // --- Global State Variables ---
 //===============================================
-uint8_t passIndex = 0;
-char mappedKey;
-char enteredPasscode[7] = ""; // store entered passcode
-char passcode[] = "123456";
-const char changepasscode[]="#1234#";
-bool servoState = false;
-bool isUnlocking = false;
-bool isChangingPasscode = false;
-unsigned long startTime;
-unsigned long passcodeEntryStartTime = 0;
-unsigned long holdTime1 = 300, holdTime2 = 1000 ;
-int f1 = 0, f2 = 0, f3=0,f4=0, c=0,c2=0;
-int retryCount = 0;
-const int DoorOpen = 95, DoorClose = 180;
+uint8_t passIndex = 0;                              // Index for current position in entered passcode
+char mappedKey;                                     // Last key pressed from the keypad
+char enteredPasscode[7] = "";                       // store entered passcode
+char passcode[] = "123456";                         // Default system passcode (can be changed later)
+char tempNewPasscode[7];                            // To store new pass temporarily
+const char changepasscode[] = "#1234#";             // Secret code to initiate the passcode change process
+bool servoState = false;                            // Keeps track of door lock/unlock state (true = unlocked)
+bool isUnlocking = false;                           // Flag indicating if door is currently being unlocked
+bool isChangingPasscode = false;                    // Flag indicating user is trying to change the passcode
+unsigned long startTime;                            // Used to measure time durations for servo unlock timeout or UI
+unsigned long passcodeEntryStartTime = 0;           // Used to track time since user started entering passcode (for timeout)
+unsigned long holdTime1 = 300, holdTime2 = 1000 ;   // Hold durations for button functions or double press (ms)
+int f1 = 0, f2 = 0, f3=0,f4=0, c=0,c2=0;            // Generic flags (used for Print control, logic states, etc.)
+int retryCount = 0;                                 // Number of incorrect passcode attempts
+const int DoorOpen = 95, DoorClose = 180;           // Servo positions for door open and close (degrees)
+Servo myServo;                                      // Create a Servo object to control the door lock
 
-Servo myServo;
 //===============================================
 // --- Setup ---
 //===============================================
 void setup()
 {
-  Serial.begin(9600);       // for Serial Monitor
-  nanoSerial.begin(9600);   // for Nano
+  Serial.begin(9600);                               // Initialize Serial Monitor for debugging (USB connection)
+  nanoSerial.begin(9600);                           // Initialize communication with Nano (likely using SoftwareSerial)
   Serial.println("✅ Initiated : Serial baud to 9600");
   Serial.println("✅ Initiated : NanoSerial baud to 9600");
-  pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(hingeSwitchPin, INPUT_PULLUP);
-  pinMode(TriggerSwitchPin, INPUT_PULLUP);
-  pinMode(buzzerPin, OUTPUT);
-  pinMode(13, OUTPUT); digitalWrite(13, LOW);
-  pinMode(LP1, OUTPUT);         // Red
-  pinMode(LP2, OUTPUT);         // Green
-  pinMode(LP3, OUTPUT);         // Blue
-  pinMode(LP4, OUTPUT);         // Button LED
-  pinMode(TriggerPin, OUTPUT);  //
+
+  // --------------------------------------------------
+  // Input Pin Configurations
+  // --------------------------------------------------
+  pinMode(buttonPin, INPUT_PULLUP);                 // Button to unlock/trigger (pulled HIGH when idle)
+  pinMode(hingeSwitchPin, INPUT_PULLUP);            // Detects if the door is physically closed
+  pinMode(TriggerSwitchPin, INPUT_PULLUP);          // Optional trigger (external switch)
+  pinMode(buzzerPin, OUTPUT);                       // Buzzer for feedback sounds
+  pinMode(13, OUTPUT);                              // Built-in LED on many boards (used as general indicator)
+  digitalWrite(13, LOW);                            // Turn off built-in LED
+  pinMode(LP1, OUTPUT);                             // Red LED (e.g., Error or Lock status)
+  pinMode(LP2, OUTPUT);                             // Green LED (Success or Ready)
+  pinMode(LP3, OUTPUT);                             // Blue LED (Optional use)
+  pinMode(LP4, OUTPUT);                             // Button LED (illuminates button or keypad area)
+  pinMode(TriggerPin, OUTPUT);                      // Output to trigger something (e.g., relay, motor, secondary board)
   Serial.println("✅ Initiated : Input Pins");
   delay(150);
 
+  // --------------------------------------------------
   // Initial LED states
+  // --------------------------------------------------
   digitalWrite(LP2, HIGH);   // Green LED ON
   digitalWrite(LP4, HIGH);   // Button LED ON
 
-  // Init Servo
-  myServo.attach(srPin);
-  Serial.println("✅ Initiated : Servo Pins");
+  // --------------------------------------------------
+  // Servo Initialization
+  // --------------------------------------------------
+  myServo.attach(srPin);                            // Attach the servo to its control pin
+  Serial.println(F("✅ Initiated : Servo Pins"));
   delay(150);
-  // Init LCD
-  lcd.init();
-  lcd.backlight();
-  lcd.setCursor(0, 0);
+
+  // --------------------------------------------------
+  // LCD Initialization
+  // --------------------------------------------------
+  lcd.init();                                       // Initialize the LCD display
+  lcd.backlight();                                  // Turn on LCD backlight
+  lcd.setCursor(0, 0);                              // Set cursor to top-left
   delay(150);
-  Serial.println("✅ Initiated : Display ");
+  Serial.println(F("✅ Initiated : Display "));
   delay(150);
-  startup();
+  
+  // -------------------------
+  // Startup Display & Status
+  // -------------------------
+  startup();                                        // Custom startup function (welcome screen, logo, etc.)
 }
 
 //===============================================
@@ -346,18 +381,18 @@ void unlocking()
 //===============================================
 void keygen()
 {
-  /*        //Original ONe
-  if (nanoSerial.available())
-  {
-    char incoming = nanoSerial.read();
-  */
-  if (Serial.available())
+  /*
+  if (Serial.available())                           //in case of Testing from system Serial Use this Line
   {
     char incoming = Serial.read();
+  */
+  if (nanoSerial.available())                       // Detect Data incomming from Different Board [Nano]
+  {
+    char incoming = nanoSerial.read();              // Read the Data Incomming from Board
     if ((incoming >= 'A' && incoming <= 'D') || (incoming >= '0' && incoming <= '9') || incoming == '#' || incoming == '*')
     {
       mappedKey = incoming;
-      Serial.print("📥 From Nano: ");
+      Serial.print(F("📥 From Nano: "));
       Serial.println(mappedKey);
     }
   }
@@ -656,4 +691,5 @@ void RestartBuzz()
 //===============================================
 // --- The End ---
 //===============================================
+
 
