@@ -42,7 +42,7 @@ const int EMGPin = 4;
 char mappedKey;
 char enteredPasscode[7] = ""; // store entered passcode
 uint8_t passIndex = 0;
-const char passcode[] = "120207";
+const char passcode[] = "123456";
 const int DoorOpen = 95, DoorClose = 180;
 bool servoState = false;
 bool isUnlocking = false;
@@ -523,7 +523,7 @@ void homescreen()
   lcd.setCursor(0, 2);
   lcd.print(F("C - DpLgt D - AReset"));
   lcd.setCursor(0, 3);
-  lcd.print(F("--------v1.9--------"));
+  lcd.print(F("--------v1.0--------"));
 }
 void startup()
 {
@@ -598,4 +598,5 @@ void RestartBuzz()
 //===============================================
 // --- The End ---
 //===============================================
+
 
