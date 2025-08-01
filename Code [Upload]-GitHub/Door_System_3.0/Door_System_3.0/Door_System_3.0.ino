@@ -45,9 +45,9 @@ const int TriggerSwitchPin = 4;     // Triger to close door
 uint8_t passIndex = 0;                              // Index for current position in entered passcode
 char mappedKey;                                     // Last key pressed from the keypad
 char enteredPasscode[7] = "";                       // store entered passcode
-char passcode[] = "120202";                         // Default system passcode (can be changed later)
+char passcode[] = "123456";                         // Default system passcode (can be changed later)
 char tempNewPasscode[7];                            // To store new pass temporarily
-const char changepasscode[] = "#2002#";             // Secret code to initiate the passcode change process
+const char changepasscode[] = "#1234#";             // Secret code to initiate the passcode change process
 bool servoState = false;                            // Keeps track of door lock/unlock state (true = unlocked)
 bool isUnlocking = false;                           // Flag indicating if door is currently being unlocked
 bool isChangingPasscode = false;                    // Flag indicating user is trying to change the passcode
