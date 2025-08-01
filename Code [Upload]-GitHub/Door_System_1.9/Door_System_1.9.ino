@@ -16,61 +16,65 @@
 //===============================================
 // --- Libraries Used ---
 //===============================================
-#include <Servo.h>
-#include <LiquidCrystal_I2C.h>
-#include <SoftwareSerial.h>
-SoftwareSerial nanoSerial(2, 3);
+#include <Servo.h>                  // For controlling the servo motor (used for door mechanism)
+#include <LiquidCrystal_I2C.h>      // For interfacing with I2C LCD display (20x4)
+#include <SoftwareSerial.h>         // For creating a secondary serial communication port
 //===============================================
 // --- Matrix Pins ---
 //===============================================
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+SoftwareSerial nanoSerial(2, 3);    // Nano-RX to D2, TX to D3
+LiquidCrystal_I2C lcd(0x27, 20, 4); // Set the LCD I2C address to 0x27, and define 20 columns and 4 rows
 //===============================================
 // --- IO Pins ---
 //===============================================
-const int LP1 = A3; // Red LED
-const int LP2 = A2; // Green LED
-const int LP3 = A1; // Blue LED (buzzer indicator)
-const int LP4 = 8;  // Button LED
+const int LP1 = A3;                 // Red LED
+const int LP2 = A2;                 // Green LED
+const int LP3 = A1;                 // Blue LED (buzzer indicator)
+const int LP4 = 8;                  // Button LED
 const int buttonPin = 10;           // Door toggle button pin
-const int hingeSwitchPin = 5;      // Hinge safety switch pin
-const int buzzerPin = 12;          // Buzzer pin
-const int srPin = 9;               // Servo motor pin
-const int EMGPin = 4;
+const int hingeSwitchPin = 5;       // Hinge safety switch pin
+const int buzzerPin = 12;           // Buzzer pin
+const int srPin = 9;                // Servo motor pin
+const int EMGPin = 4;               // Emergency Button pin
 //===============================================
 // --- Global State Variables ---
 //===============================================
-char mappedKey;
-char enteredPasscode[7] = ""; // store entered passcode
-uint8_t passIndex = 0;
-const char passcode[] = "123456";
-const int DoorOpen = 95, DoorClose = 180;
-bool servoState = false;
-bool isUnlocking = false;
-unsigned long startTime;
-unsigned long passcodeEntryStartTime = 0;
-int f1 = 0, f2 = 0;
-int retryCount = 0;
-unsigned long holdTime1 = 300, holdTime2 = 10000 ;
+uint8_t passIndex = 0;                              // Index for current position in entered passcode
+char mappedKey;                                     // Last key pressed from the keypad
+char enteredPasscode[7] = "";                       // store entered passcode
+const char passcode[] = "123456";                   // Default system passcode (can be changed later)
+const int DoorOpen = 95, DoorClose = 180;           // Servo positions for door open and close (degrees)
+bool servoState = false;                            // Keeps track of door lock/unlock state (true = unlocked)
+bool isUnlocking = false;                           // Flag indicating if door is currently being unlocked
+unsigned long startTime;                            // Used to measure time durations for servo unlock timeout or UI
+unsigned long passcodeEntryStartTime = 0;           // Used to track time since user started entering passcode (for timeout)
+int f1 = 0, f2 = 0;                                 // Generic flags (used for Print control, logic states, etc.)
+int retryCount = 0;                                 // Number of incorrect passcode attempts
+unsigned long holdTime1 = 300, holdTime2 = 10000 ;  // Hold durations for button functions or double press (ms)
+Servo myServo;                                      // Create a Servo object to control the door lock
 
-Servo myServo;
 //===============================================
 // --- Setup ---
 //===============================================
 void setup()
 {
-  Serial.begin(9600);       // for Serial Monitor
-  nanoSerial.begin(9600);   // for Nano
-  Serial.println("✅ Initiated : Serial baud to 9600");
-  Serial.println("✅ Initiated : NanoSerial baud to 9600");
-  pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(hingeSwitchPin, INPUT_PULLUP);
-  pinMode(EMGPin, INPUT_PULLUP);
-  pinMode(buzzerPin, OUTPUT);
-  pinMode(13, OUTPUT); digitalWrite(13, LOW);
-  pinMode(LP1, OUTPUT); // Red
-  pinMode(LP2, OUTPUT); // Green
-  pinMode(LP3, OUTPUT); // Blue
-  pinMode(LP4, OUTPUT); // Button LED
+  Serial.begin(9600);                               // Initialize Serial Monitor for debugging (USB connection)
+  nanoSerial.begin(9600);                           // Initialize communication with Nano (likely using SoftwareSerial)
+  Serial.println(F("✅ Initiated : Serial baud to 9600"));
+  Serial.println(F("✅ Initiated : NanoSerial baud to 9600"));
+  // --------------------------------------------------
+  // Input Pin Configurations
+  // --------------------------------------------------
+  pinMode(buttonPin, INPUT_PULLUP);                 // Button to unlock/trigger (pulled HIGH when idle)
+  pinMode(hingeSwitchPin, INPUT_PULLUP);            // Detects if the door is physically closed
+  pinMode(EMGPin, INPUT_PULLUP);                    // Emergency Button Pin
+  pinMode(buzzerPin, OUTPUT);                       // Buzzer for feedback sounds
+  pinMode(13, OUTPUT);                              // Built-in LED on many boards (used as general indicator)
+  digitalWrite(13, LOW);                            // Turn off built-in LED
+  pinMode(LP1, OUTPUT);                             // Red LED (e.g., Error or Lock status)
+  pinMode(LP2, OUTPUT);                             // Green LED (Success or Ready)
+  pinMode(LP3, OUTPUT);                             // Blue LED (Optional use)
+  pinMode(LP4, OUTPUT);                             // Button LED (illuminates button or keypad area)
   Serial.println("✅ Initiated : Input Pins");
   delay(150);
 
@@ -78,19 +82,26 @@ void setup()
   digitalWrite(LP2, HIGH);   // Green LED ON
   digitalWrite(LP4, HIGH);   // Button LED ON
 
-  // Init Servo
-  myServo.attach(srPin);
+  // --------------------------------------------------
+  // Servo Initialization
+  // --------------------------------------------------
+  myServo.attach(srPin);                            // Attach the servo to its control pin
   myServo.write(DoorOpen);
   Serial.println("✅ Initiated : Servo Pins");
   delay(150);
-  // Init LCD
-  lcd.init();
-  lcd.backlight();
-  lcd.setCursor(0, 0);
+  // --------------------------------------------------
+  // LCD Initialization
+  // --------------------------------------------------
+  lcd.init();                                       // Initialize the LCD display
+  lcd.backlight();                                  // Turn on LCD backlight
+  lcd.setCursor(0, 0);                              // Set cursor to top-left
   delay(150);
   Serial.println("✅ Initiated : Display ");
   delay(150);
-  startup();
+  // --------------------------------------------------
+  // Startup Display & Status
+  // --------------------------------------------------
+  startup();                                        // Custom startup function (welcome screen, logo, etc.)
 }
 
 //===============================================
@@ -98,8 +109,8 @@ void setup()
 //===============================================
 void loop()
 {
-  DoorToggler();
-  keypad();
+  DoorToggler();                                    // Function to check for external door open request or button press
+  keypad();                                         // Function to read input from keypad and handle passcode logic
 }
 
 //===============================================
@@ -325,13 +336,18 @@ void unlocking()
 //===============================================
 void keygen()
 {
-  if (nanoSerial.available())
+  /*
+  if (Serial.available())                           //in case of Testing from system Serial Use this Line
   {
-    char incoming = nanoSerial.read();
+    char incoming = Serial.read();
+  */
+  if (nanoSerial.available())                       // Detect Data incomming from Different Board [Nano]
+  {
+    char incoming = nanoSerial.read();              // Read the Data Incomming from Board
     if ((incoming >= 'A' && incoming <= 'D') || (incoming >= '0' && incoming <= '9') || incoming == 'C')
     {
       mappedKey = incoming;
-      Serial.print("📥 From Nano: ");
+      Serial.print(F("📥 From Nano: "));
       Serial.println(mappedKey);
     }
   }
@@ -598,5 +614,6 @@ void RestartBuzz()
 //===============================================
 // --- The End ---
 //===============================================
+
 
 
