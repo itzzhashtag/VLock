@@ -47,8 +47,8 @@ const int TriggerSwitchPin = 4;     // Triger to close door
 //==============================================================================================
 uint8_t passIndex = 0;                              // Index for current position in entered passcode
 char mappedKey;                                     // Last key pressed from the keypad
-const char changepasscode[] = "#2002#";             // Secret code to initiate the passcode change process
-const int SystemStartPass = "120202";               // Starting Default Passcode
+const char changepasscode[] = "#1234#";             // Secret code to initiate the passcode change process
+const int SystemStartPass = "123456";               // Starting Default Passcode
 const int PASSCODE_LENGTH = 6;                      // 🔐 Length of the passcode
 const int EEPROM_ADDR = 0;                          // 💾 EEPROM starting address for passcode storage
 char passcode[PASSCODE_LENGTH + 1];                 // Holds current passcode
@@ -533,18 +533,18 @@ void loadOrInitPasscode()
   if (eepromIsBlank)                                    // 💾 EEPROM is blank, so store the default system passcode in it
   {
     strcpy(passcode, SystemStartPass);                  // Copy the default passcode string to the working passcode variable
-    for (int i = 0; i < PASSCODE_LENGTH; i++)            // Save each character of the default passcode into EEPROM
+    for (int i = 0; i < PASSCODE_LENGTH; i++)           // Save each character of the default passcode into EEPROM
     {
       EEPROM.update(EEPROM_ADDR + i, passcode[i]);      // Writes only if the value is different
     }
   } 
-  else                                                     // 📥 EEPROM has a saved passcode, so load it into memory
+  else                                                  // 📥 EEPROM has a saved passcode, so load it into memory
   {
     for (int i = 0; i < PASSCODE_LENGTH; i++) 
     {
-      passcode[i] = EEPROM.read(EEPROM_ADDR + i);         // Read stored characters from EEPROM
+      passcode[i] = EEPROM.read(EEPROM_ADDR + i);       // Read stored characters from EEPROM
     }
-    passcode[PASSCODE_LENGTH] = '\0';                     // Ensure string is null-terminated for safety
+    passcode[PASSCODE_LENGTH] = '\0';                   // Ensure string is null-terminated for safety
   }
 }
 
@@ -863,3 +863,4 @@ void RestartBuzz()
 //==============================================================================================
 // --- The End ---
 //==============================================================================================
+
