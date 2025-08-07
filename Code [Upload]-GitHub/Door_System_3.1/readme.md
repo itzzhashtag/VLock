@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔐 ESP Lock System - In-Code README
+# 🔐 VLock+ - Personal Smart Door Lock System v3.1
 <img src="https://img.shields.io/badge/Status-Working-brightgreen?style=for-the-badge&logo=arduino" alt="Status Badge" />
 <img src="https://img.shields.io/badge/Built%20with-Arduino-blue?style=for-the-badge&logo=arduino" alt="Arduino Badge" />
 <img src="https://img.shields.io/badge/Language-C%23-orange?style=for-the-badge" alt="License Badge" />
