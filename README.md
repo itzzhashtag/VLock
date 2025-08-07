@@ -25,6 +25,8 @@ This project automates door locking/unlocking using a servo-controlled mechanism
 - Door handle button for unlocking.
 - An LCD for visual interface and interaction.
 - Safety features including manual reset and retry mechanism if door fails to close.
+- **Permanent Passcode Storage** — passcode is saved in EEPROM and persists even after power loss.
+- **Self-initializing EEPROM** — first boot automatically stores default passcode if EEPROM is blank.
 
 The project is installed in **my personal room** and is built with **modular expansion in mind**, with a secondary Nano board handling keypad input over serial.
 
@@ -34,6 +36,8 @@ The project is installed in **my personal room** and is built with **modular exp
 
 - 🔒 **Secure Lock/Unlock using 6-digit Passcode**
 - ♻ **Passcode Change Mode** with Secret Admin Code
+- 💾 **EEPROM Passcode Storage** — saves any changed passcode permanently until updated again
+- 🛡 **Automatic EEPROM Initialization** with default passcode on first boot
 - 💡 **Backlight Toggle** on LCD via Keypad
 - 🆘 **Manual Reset Button** (hidden for safety)
 - 🎛️ **Multi-Button Unlock** from different positions
@@ -60,19 +64,20 @@ The project is installed in **my personal room** and is built with **modular exp
 | **Buttons**          | Multiple buttons for manual unlock              |
 | **Hinge Switch (BTN)**     | Safety sensor to confirm door closure           |
 | **LEDs (Red/Green/Blue)** | Status indicators                         |
+| **EEPROM**           | Non-volatile memory to store passcode           |
 
 ---
 
 ## 🔑 Default Credentials (Change Accordingly)
 
-- **Main Passcode**: `123456`
+- **Main Passcode**: `123456` (stored in EEPROM after first boot)
 - **Change Passcode Code**: `#1234#`
 
 ---
 
 ## 🛠️ Code Structure
 
-- `setup()`: Initializes all hardware components and starts UI.
+- `setup()`: Initializes all hardware components, loads passcode from EEPROM (or sets default on first boot), and starts UI.
 - `loop()`: Main execution loop to listen for keypad input and button presses.
 - `keypad()`: Handles all key inputs and UI logic.
 - `unlocking()`: Validates passcode and handles passcode change flow.
@@ -82,6 +87,8 @@ The project is installed in **my personal room** and is built with **modular exp
 - `debounceButton()`: Safe button press handler with long press detection.
 - `homescreen()` / `startup()`: Display UI management.
 - `warningBuzz()` / `RestartBuzz()`: Buzzer alerts for feedback.
+- `loadOrInitPasscode()`: Loads saved passcode from EEPROM, or initializes it with default on first boot.
+- `savePasscodeToEEPROM()`: Updates stored passcode without overwriting unchanged data.
 
 ---
 
@@ -99,6 +106,7 @@ The project is installed in **my personal room** and is built with **modular exp
 
 ## ⚠️ Safety & Fail-safes
 
+- **EEPROM corruption prevention** — passcode updates use `EEPROM.update()` to avoid unnecessary wear.
 - **Manual Reset Button** is hidden behind door panel.
 - **Retry Mechanism**: If the hinge switch doesn’t confirm door closure, the system retries up to 3 times.
 - **Timeout**: UI auto-closes passcode input after 60 seconds.
@@ -112,8 +120,9 @@ The project is installed in **my personal room** and is built with **modular exp
 2. Upload [Nano Keypad Code](link-to-nano-code) to your **Nano board**.
 3. Wire the Nano to UNO via SoftwareSerial (Nano TX → UNO RX D2).
 4. Connect components as per the pin definitions in the code.
-5. Power up and observe startup melody + door auto-unlock on boot.
-6. Use keypad to lock/unlock and test passcode change.
+5. On **first boot**, the default passcode will be automatically saved to EEPROM.
+6. Power up and observe startup melody + door auto-unlock on boot.
+7. Use keypad to lock/unlock and test passcode change — new codes are stored permanently in EEPROM.
 
 ---
 
