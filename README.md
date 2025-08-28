@@ -18,7 +18,7 @@ This project automates door locking/unlocking using a servo-controlled mechanism
 ---
 
 ## 📌 Overview
-
+ 
 **VLock+** is a **smart door lock system** that allows secure access using:
 - Keypad passcode entry with secret admin features.
 - Manual override buttons.
